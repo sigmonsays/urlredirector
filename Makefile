@@ -19,6 +19,9 @@ export GO111MODULE := on
 GO_BINS =
 GO_BINS += urlredirectord
 
+all:
+	$(MAKE) compile
+
 help:
 	#
 	# docker        build docker image
@@ -31,13 +34,11 @@ dockerpush:
 	docker push $(TAG)
 
 
-all:
-	$(MAKE) compile
 
 compile:
 	mkdir -p tmp
 	mkdir -p $(GOBIN)
-	go build ./urlredirectord
+	go build -o $(GOBIN)/urlredirectord ./urlredirectord
 
 install:
 	mkdir -p $(DESTDIR)/$(INSTALL_PREFIX)/bin/
