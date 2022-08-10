@@ -16,7 +16,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Unshallow
-        run: git fetch --prune --unshallow
+        run: |
+          git config --global --add safe.directory /github/workspace
+          git fetch --prune --unshallow
 
       - name: Build debian package
         uses: sigmonsays/dpkg-buildpackage-go@master
