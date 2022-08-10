@@ -20,6 +20,7 @@ GO_BINS =
 GO_BINS += urlredirectord
 
 all:
+	go mod tidy
 	$(MAKE) compile
 
 help:
