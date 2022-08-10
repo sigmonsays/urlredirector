@@ -18,6 +18,11 @@ type Config struct {
 	HttpPort  int    `env:"HTTP_PORT,default=8080"`
 	RedisHost string `env:"REDIS_HOST,default=localhost"`
 	RedisPort int    `env:"REDIS_PORT,default=6379"`
+
+	Auth struct {
+		Username string `env:"AUTH_USERNAME"`
+		Password string `env:"AUTH_PASSWORD"`
+	} `env:"auth"`
 }
 
 func main() {
@@ -50,7 +55,18 @@ func run() error {
 	eh := &ErrorWrapper{}
 
 	mx := http.NewServeMux()
-	mx.HandleFunc("/api/create", eh.WrapHandler(handler.CreateRedirect))
+
+	haveAuth := cfg.Auth.Username != "" && cfg.Auth.Password != ""
+	var createHandler http.HandlerFunc
+	createHandler = eh.WrapHandler(handler.CreateRedirect)
+	if haveAuth {
+		basicAuth := &BasicAuth{}
+		basicAuth.Username = cfg.Auth.Username
+		basicAuth.Password = cfg.Auth.Password
+		createHandler = basicAuth.AuthWrapper(createHandler)
+	}
+	mx.HandleFunc("/api/create", createHandler)
+
 	mx.HandleFunc("/", eh.WrapHandler(handler.GetRedirect))
 
 	srv := &http.Server{}
