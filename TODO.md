@@ -1,6 +1,7 @@
-# Document Title
+# TODO
 
-- protect /api from being written to
-- add a basic form of authentication to create 
-- support default expiration
-
+- [x] add a basic form of authentication to create 
+- [ ] protect /api from being written to
+- [ ] support expiration (default or provided)
+- [ ] github workflow to build deb package
+- [ ] github workflow to build and publish image to docker hub
