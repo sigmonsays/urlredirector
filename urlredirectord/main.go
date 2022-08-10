@@ -8,14 +8,16 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v9"
+	"github.com/sethvargo/go-envconfig"
 )
 
 type Config struct {
-	Port int
+	HttpPort  int    `env:"HTTP_PORT"`
+	RedisHost string `env:"REDIS_HOST"`
+	RedisPort int    `env:"REDIS_PORT"`
 }
 
 func main() {
@@ -27,15 +29,12 @@ func main() {
 }
 func run() error {
 	cfg := &Config{}
-	cfg.Port = 8080
+	cfg.HttpPort = 8080
+	ctx := context.Background()
 
-	listen_port := os.Getenv("PORT")
-	if listen_port != "" {
-		x, err := strconv.Atoi(listen_port)
-		if err != nil {
-			return err
-		}
-		cfg.Port = x
+	err := envconfig.Process(ctx, &cfg)
+	if err != nil {
+		return err
 	}
 
 	rdb := redis.NewClient(&redis.Options{
@@ -52,11 +51,11 @@ func run() error {
 	mx.HandleFunc("/", eh.WrapHandler(handler.GetRedirect))
 
 	srv := &http.Server{}
-	srv.Addr = fmt.Sprintf(":%d", cfg.Port)
+	srv.Addr = fmt.Sprintf(":%d", cfg.HttpPort)
 	srv.Handler = mx
 
-	log.Printf("Listening at port %d", cfg.Port)
-	err := srv.ListenAndServe()
+	log.Printf("Listening at port %d", cfg.HttpPort)
+	err = srv.ListenAndServe()
 	if err != nil {
 		return err
 	}
