@@ -27,3 +27,8 @@ to build and publish
 
      docker tag urlredirectord sigmonsays/urlredirector
      docker push sigmonsays/urlredirector
+
+
+.deb packages are generated and published as part of a github action workflow
+
+
