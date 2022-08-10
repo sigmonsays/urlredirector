@@ -15,9 +15,9 @@ import (
 )
 
 type Config struct {
-	HttpPort  int    `env:"HTTP_PORT"`
-	RedisHost string `env:"REDIS_HOST"`
-	RedisPort int    `env:"REDIS_PORT"`
+	HttpPort  int    `env:"HTTP_PORT,default=8080"`
+	RedisHost string `env:"REDIS_HOST,default=localhost"`
+	RedisPort int    `env:"REDIS_PORT,default=6379"`
 }
 
 func main() {
@@ -28,8 +28,7 @@ func main() {
 	}
 }
 func run() error {
-	cfg := &Config{}
-	cfg.HttpPort = 8080
+	cfg := Config{}
 	ctx := context.Background()
 
 	err := envconfig.Process(ctx, &cfg)
@@ -37,8 +36,12 @@ func run() error {
 		return err
 	}
 
+	log.Printf("app config %+v", cfg)
+
+	redisAddr := fmt.Sprintf("%s:%d", cfg.RedisHost, cfg.RedisPort)
+	log.Printf("connecting to redis at %s", redisAddr)
 	rdb := redis.NewClient(&redis.Options{
-		Addr: ":6379",
+		Addr: redisAddr,
 	})
 
 	handler := &UrlHandler{}
