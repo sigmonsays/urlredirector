@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v9"
@@ -51,6 +52,9 @@ func run() error {
 
 	handler := &UrlHandler{}
 	handler.rdb = rdb
+	handler.protectedPaths = []string{
+		"/api",
+	}
 
 	eh := &ErrorWrapper{}
 
@@ -64,6 +68,7 @@ func run() error {
 		basicAuth.Username = cfg.Auth.Username
 		basicAuth.Password = cfg.Auth.Password
 		createHandler = basicAuth.AuthWrapper(createHandler)
+		log.Printf("Setting up BasicAuth on server")
 	}
 	mx.HandleFunc("/api/create", createHandler)
 
@@ -89,7 +94,8 @@ type UrlRecord struct {
 }
 
 type UrlHandler struct {
-	rdb *redis.Client
+	rdb            *redis.Client
+	protectedPaths []string
 }
 
 type UrlResponse struct {
@@ -112,6 +118,15 @@ func (me *UrlHandler) sendError(w http.ResponseWriter, r *http.Request, s string
 	return nil
 }
 
+func (me *UrlHandler) IsPathProtected(path string) bool {
+	for _, p := range me.protectedPaths {
+		if strings.HasPrefix(path, p) {
+			return true
+		}
+	}
+	return false
+}
+
 func (me *UrlHandler) CreateRedirect(w http.ResponseWriter, r *http.Request) error {
 	rec := UrlRecord{}
 	ctx := context.Background()
@@ -128,7 +143,7 @@ func (me *UrlHandler) CreateRedirect(w http.ResponseWriter, r *http.Request) err
 
 	err = json.Unmarshal(buf, &rec)
 	if err != nil {
-		return err
+		return me.sendError(w, r, "Unmarshal request: %s", err)
 	}
 	now := time.Now()
 	ts := now.Unix()
@@ -137,6 +152,10 @@ func (me *UrlHandler) CreateRedirect(w http.ResponseWriter, r *http.Request) err
 	log.Printf("CreateRedirect %#v", rec)
 
 	key := rec.Id
+
+	if me.IsPathProtected(key) {
+		return me.sendError(w, r, "ProtectedPath: %s", key)
+	}
 
 	_, err = me.rdb.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "id", rec.Id)
