@@ -13,6 +13,7 @@ const (
 	Unknown        ErrorClass = -1
 	Success        ErrorClass = 0
 	NoSuchRedirect ErrorClass = 40001
+	InvalidRequest ErrorClass = 40999
 )
 
 var (

@@ -16,7 +16,7 @@ func (me *UrlHandler) CreateRedirect(w http.ResponseWriter, r *http.Request) err
 	ctx := context.Background()
 
 	if r.Method != "POST" {
-		return me.sendError(w, r, "Invalid HTTP method: %s", r.Method)
+		return me.sendError(w, r, InvalidRequest, "Invalid HTTP method: %s", r.Method)
 	}
 
 	buf, err := ioutil.ReadAll(r.Body)
@@ -27,7 +27,7 @@ func (me *UrlHandler) CreateRedirect(w http.ResponseWriter, r *http.Request) err
 
 	err = json.Unmarshal(buf, &rec)
 	if err != nil {
-		return me.sendError(w, r, "Unmarshal request: %s", err)
+		return me.sendError(w, r, Unknown, "Unmarshal request: %s", err)
 	}
 	now := time.Now()
 	ts := now.Unix()
@@ -38,7 +38,7 @@ func (me *UrlHandler) CreateRedirect(w http.ResponseWriter, r *http.Request) err
 	key := rec.Id
 
 	if me.IsPathProtected(key) {
-		return me.sendError(w, r, "ProtectedPath: %s", key)
+		return me.sendError(w, r, InvalidRequest, "ProtectedPath: %s", key)
 	}
 
 	_, err = me.rdb.Pipelined(ctx, func(rdb redis.Pipeliner) error {

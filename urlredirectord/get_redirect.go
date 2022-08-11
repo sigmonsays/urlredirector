@@ -21,7 +21,7 @@ func (me *UrlHandler) GetRedirect(w http.ResponseWriter, r *http.Request) error 
 
 	log.Printf("GetRedirect got %#v", rec)
 	if rec.Id == "" {
-		return me.sendError(w, r, "No such redirect: %s", key)
+		return me.sendError(w, r, NoSuchRedirect, "No such redirect: %s", key)
 	}
 
 	w.Header().Set("Location", rec.Url)

@@ -22,16 +22,25 @@ type UrlHandler struct {
 }
 
 type UrlResponse struct {
-	Error string `json:"error,omitempty"`
-	Url   string `json:"url,omitempty"`
+	Reason string `json:"reason,omitempty"`
+	Error  string `json:"error,omitempty"`
+	Url    string `json:"url,omitempty"`
 }
 
-func (me *UrlHandler) sendError(w http.ResponseWriter, r *http.Request, s string, args ...interface{}) error {
-	msg := fmt.Sprintf(s, args...)
-	log.Printf("sendError %s: %s", r.URL, msg)
+func (me *UrlHandler) sendError(w http.ResponseWriter, r *http.Request, ec ErrorClass, s string, args ...interface{}) error {
 
 	res := &UrlResponse{}
-	res.Error = msg
+
+	if ec == Unknown {
+		msg := fmt.Sprintf(s, args...)
+		res.Error = msg
+	} else {
+		ae := ec.Sprintf(s, args...)
+		res.Reason = ae.Class.String()
+		res.Error = ae.Message
+	}
+	log.Printf("sendError %s: %+v", r.URL, res)
+
 	buf, _ := json.MarshalIndent(res, "", " ")
 
 	h := w.Header()
