@@ -51,6 +51,9 @@ func (me *UrlHandler) sendError(w http.ResponseWriter, r *http.Request, ec Error
 }
 
 func (me *UrlHandler) IsPathProtected(path string) bool {
+	if path == "" || path == "/" {
+		return true
+	}
 	for _, p := range me.protectedPaths {
 		if strings.HasPrefix(path, p) {
 			return true

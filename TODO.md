@@ -5,3 +5,4 @@
 - [ ] support expiration (default or provided)
 - [ ] github workflow to build deb package
 - [ ] github workflow to build and publish image to docker hub
+- [ ] add simple search feature to find links by name
