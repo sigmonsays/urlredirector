@@ -7,8 +7,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/go-redis/redis/v9"
 )
 
 type CreateResponse struct {
@@ -46,16 +44,9 @@ func (me *UrlHandler) CreateRedirect(w http.ResponseWriter, r *http.Request) err
 		return me.sendError(w, r, InvalidRequest, "ProtectedPath: %s", key)
 	}
 
-	_, err = me.rdb.Pipelined(ctx, func(pipeline redis.Pipeliner) error {
-		pipeline.HSet(ctx, key, "id", rec.Id)
-		pipeline.HSet(ctx, key, "url", rec.Url)
-		pipeline.HSet(ctx, key, "ts", rec.Ts)
-		//rdb.HSet(ctx, "key", "int", 123)
-		//rdb.HSet(ctx, "key", "bool", 1)
-		return nil
-	})
+	err = me.urlApi.CreateRedirect(ctx, &rec)
 	if err != nil {
-		return me.sendError(w, r, Unknown, "Pipeline: %s", key)
+		return me.sendError(w, r, Unknown, "CreateRedirect: %s", key)
 	}
 
 	ret := &CreateResponse{}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-redis/redis/v9"
 	"github.com/sethvargo/go-envconfig"
+	"github.com/sigmonsays/urlredirector/static"
 )
 
 type Config struct {
@@ -46,8 +47,15 @@ func run() error {
 		Addr: redisAddr,
 	})
 
+	urlApi := NewUrlApi(rdb)
+
+	rec := &UrlRecord{}
+	rec.Id = "/welcome/index.html"
+	rec.Url = "/welcome/index.html"
+	urlApi.CreateRedirect(ctx, rec)
+
 	handler := &UrlHandler{}
-	handler.rdb = rdb
+	handler.urlApi = urlApi
 	handler.protectedPaths = []string{
 		"/api",
 	}
@@ -68,6 +76,7 @@ func run() error {
 	}
 	mx.HandleFunc("/api/create", createHandler)
 
+	mx.Handle("/welcome/", http.StripPrefix("/welcome/", http.FileServer(http.FS(static.Files))))
 	mx.HandleFunc("/", eh.WrapHandler(handler.GetRedirect))
 
 	srv := &http.Server{}
