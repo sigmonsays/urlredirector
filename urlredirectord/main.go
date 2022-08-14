@@ -49,6 +49,11 @@ func run() error {
 
 	urlApi := NewUrlApi(rdb)
 
+	rec := &UrlRecord{}
+	rec.Id = "/welcome/index.html"
+	rec.Url = "/welcome/index.html"
+	urlApi.CreateRedirect(ctx, rec)
+
 	handler := &UrlHandler{}
 	handler.urlApi = urlApi
 	handler.protectedPaths = []string{
@@ -71,9 +76,8 @@ func run() error {
 	}
 	mx.HandleFunc("/api/create", createHandler)
 
+	mx.Handle("/welcome/", http.StripPrefix("/welcome/", http.FileServer(http.FS(static.Files))))
 	mx.HandleFunc("/", eh.WrapHandler(handler.GetRedirect))
-
-	http.Handle("/welcome/", http.StripPrefix("/welcome/", http.FileServer(http.FS(static.Files))))
 
 	srv := &http.Server{}
 	srv.Addr = fmt.Sprintf(":%d", cfg.HttpPort)
