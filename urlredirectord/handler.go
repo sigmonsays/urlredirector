@@ -6,8 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/go-redis/redis/v9"
 )
 
 type UrlRecord struct {
@@ -17,8 +15,8 @@ type UrlRecord struct {
 }
 
 type UrlHandler struct {
-	rdb            *redis.Client
 	protectedPaths []string
+	urlApi         *UrlApi
 }
 
 type UrlResponse struct {

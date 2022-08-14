@@ -7,13 +7,12 @@ import (
 )
 
 func (me *UrlHandler) GetRedirect(w http.ResponseWriter, r *http.Request) error {
-	rec := UrlRecord{}
 	ctx := context.Background()
 
 	key := r.URL.Path
 	log.Printf("GetRedirect %s", key)
 
-	err := me.rdb.HGetAll(ctx, key).Scan(&rec)
+	rec, err := me.urlApi.GetRedirect(ctx, key)
 	if err != nil {
 		log.Printf("ERROR: HGetAll %s: %s", key, err)
 		return nil
