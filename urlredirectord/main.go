@@ -50,7 +50,7 @@ func run() error {
 	urlApi := NewUrlApi(rdb)
 
 	rec := &UrlRecord{}
-	rec.Id = "/welcome/index.html"
+	rec.Id = "/"
 	rec.Url = "/welcome/index.html"
 	urlApi.CreateRedirect(ctx, rec)
 
